@@ -1,25 +1,77 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Link, Outlet } from 'react-router-dom';
+import { useState, useRef } from 'react';
+import {
+  AuthenticatedUser,
+  AuthenticatedUserProvider,
+  useAuthenticatedUser,
+} from './domain/users/UserContext';
+import { User } from './domain/users/User';
+
+const Counter = () => {
+  // const [value, setValue] = useState(0);
+  const valueRef = useRef(0);
+
+  return (
+    <div>
+      <button
+        onClick={() => {
+          valueRef.current--;
+          console.log(valueRef.current);
+        }}
+      >
+        -
+      </button>
+      {valueRef.current}
+      <button
+        onClick={() => {
+          valueRef.current++;
+          console.log(valueRef.current);
+        }}
+      >
+        +
+      </button>
+    </div>
+  );
+};
+
+const MyNavigation = () => {
+  const { user } = useAuthenticatedUser();
+  return (
+    <nav>
+      <a href="/books">Books</a> | <a href="/about">About</a> | user:{' '}
+      {user ? (
+        user.name
+      ) : (
+        <>
+          <span>anonymous</span>
+          <Link to="login">Login</Link>
+        </>
+      )}
+    </nav>
+  );
+};
 
 function App() {
+  const [user, setUser] = useState<User | null>(null);
+
+  const authenticatedUser: AuthenticatedUser = {
+    user,
+    setAuthenticatedUser: (_user) => setUser(user),
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthenticatedUserProvider user={authenticatedUser}>
+      <MyNavigation />
+      <main>
+        <h1>Book Manager</h1>
+        <div>
+          <Counter />
+          <Counter />
+
+          <Outlet />
+        </div>
+      </main>
+    </AuthenticatedUserProvider>
   );
 }
 
